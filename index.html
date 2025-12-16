@@ -8,101 +8,70 @@
     :root {
       --primary: #111827;
       --accent: #2563eb;
-      --available: #16a34a;
-      --selected: #2563eb;
-      --unavailable: #dc2626;
-      --bg: #f9fafb;
       --card: #ffffff;
+      --bg: #f9fafb;
     }
-
     body {
       margin: 0;
-      font-family: Inter, Arial, sans-serif;
+      font-family: Arial, sans-serif;
       background: var(--bg);
       color: #111;
     }
-
     header {
       background: var(--primary);
-      color: #fff;
-      padding: 24px;
+      color: white;
+      padding: 20px;
       text-align: center;
     }
-
     main {
+      padding: 24px;
       max-width: 1100px;
       margin: auto;
-      padding: 24px;
     }
-
-    .info {
-      background: var(--card);
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 12px rgba(0,0,0,.05);
-    }
-
     .numbers {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-      gap: 8px;
+      gap: 6px;
     }
-
     .number {
-      padding: 12px 0;
+      padding: 10px 0;
       text-align: center;
-      border-radius: 8px;
-      font-size: 14px;
+      border-radius: 6px;
       cursor: pointer;
       user-select: none;
-      border: 2px solid transparent;
+      font-size: 14px;
     }
-
-    .available { background: #dcfce7; color: #065f46; }
-    .selected { background: #dbeafe; color: #1e3a8a; border-color: var(--selected); }
-    .unavailable { background: #fee2e2; color: #7f1d1d; cursor: not-allowed; }
-
+    .number.available { background: #dcfce7; color: #065f46; }
+    .number.selected { background: #dbeafe; color: #1e3a8a; border: 2px solid var(--accent); }
+    .number.unavailable { background: #fee2e2; color: #7f1d1d; cursor: not-allowed; }
     form {
-      margin-top: 32px;
+      margin-top: 30px;
       background: var(--card);
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,.05);
+      padding: 20px;
+      border-radius: 8px;
     }
-
-    label { display: block; margin-top: 16px; }
     input {
       width: 100%;
       padding: 10px;
       margin-top: 6px;
-      border-radius: 8px;
+      margin-bottom: 12px;
       border: 1px solid #d1d5db;
+      border-radius: 6px;
       font-size: 14px;
     }
-
     button {
-      margin-top: 24px;
       width: 100%;
       padding: 14px;
       background: var(--accent);
       color: #fff;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
       font-size: 16px;
       cursor: pointer;
     }
-
     .summary {
-      margin-top: 16px;
+      margin-top: 10px;
       font-weight: bold;
-    }
-
-    footer {
-      margin-top: 40px;
-      text-align: center;
-      font-size: 13px;
-      color: #555;
     }
   </style>
 </head>
@@ -114,14 +83,7 @@
 </header>
 
 <main>
-
-  <section class="info">
-    <h2>Sobre a rifa</h2>
-    <p><em>Descrição da rifa (exemplo):</em> concorra a um prêmio incrível. Em breve você verá aqui a descrição completa do prêmio e a data do sorteio.</p>
-    <p><strong>Data do sorteio:</strong> a definir</p>
-  </section>
-
-  <section class="info">
+  <section>
     <h2>Escolha seus números</h2>
     <div id="numbers" class="numbers"></div>
   </section>
@@ -129,35 +91,26 @@
   <form id="buyerForm">
     <h2>Dados do comprador</h2>
 
-    <label>Nome completo
+    <label>
+      Nome completo
       <input type="text" id="name" required />
     </label>
 
-    <label>Email
+    <label>
+      Email
       <input type="email" id="email" required />
     </label>
 
-    <label>Telefone
-      <input
-  type="tel"
-  id="phone"
-  required
-  inputmode="numeric"
-  placeholder="DDD+Número ---> Exemplo: Se (11) 98765-4321, digite 11987654321"
-/>
-
+    <label>
+      Telefone (somente números, ex: 84981677500)
+      <input type="tel" id="phone" inputmode="numeric" required placeholder="84981677500" />
     </label>
 
     <div class="summary" id="summary"></div>
 
     <button type="submit">Finalizar compra</button>
   </form>
-
 </main>
-
-<footer>
-  Fellipe Prado – Rifa Online
-</footer>
 
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
@@ -166,36 +119,41 @@
   const PRICE = 3;
   const MAX = 1000;
 
-  const numbersDiv = document.getElementById('numbers');
-  const summaryDiv = document.getElementById('summary');
-
   let sold = [];
   let selected = [];
 
+  function formatNumber(n) {
+    return n.toString().padStart(4, '0');
+  }
+
   fetch(API_URL)
-    .then(r => r.json())
+    .then(response => response.json())
     .then(data => {
       sold = data.map(Number);
       renderNumbers();
+    })
+    .catch(err => {
+      console.error("Erro ao carregar números:", err);
     });
 
   function renderNumbers() {
-    numbersDiv.innerHTML = '';
+    const container = document.getElementById("numbers");
+    container.innerHTML = "";
     for (let i = 0; i <= MAX; i++) {
-      const div = document.createElement('div');
+      const div = document.createElement("div");
       div.textContent = formatNumber(i);
 
-
       if (sold.includes(i)) {
-        div.className = 'number unavailable';
+        div.className = "number unavailable";
       } else if (selected.includes(i)) {
-        div.className = 'number selected';
+        div.className = "number selected";
         div.onclick = () => toggle(i);
       } else {
-        div.className = 'number available';
+        div.className = "number available";
         div.onclick = () => toggle(i);
       }
-      numbersDiv.appendChild(div);
+
+      container.appendChild(div);
     }
   }
 
@@ -206,51 +164,40 @@
       selected.push(n);
     }
     updateSummary();
-function formatNumber(n) {
-  return n.toString().padStart(4, '0');
-}
-
     renderNumbers();
   }
 
   function updateSummary() {
+    const summaryDiv = document.getElementById("summary");
     if (selected.length === 0) {
-      summaryDiv.textContent = '';
+      summaryDiv.textContent = "";
       return;
     }
     const total = selected.length * PRICE;
-    const formatted = selected.map(n => formatNumber(n)).join(', ');
-summaryDiv.textContent = `Números selecionados: ${formatted} | Total: R$ ${total.toFixed(2)}`;
-
+    const formatted = selected.map(n => formatNumber(n)).join(", ");
+    summaryDiv.textContent = `Números selecionados: ${formatted} | Total: R$ ${total.toFixed(2)}`;
   }
 
-  document.getElementById('buyerForm').addEventListener('submit', e => {
-  e.preventDefault();
+  document.getElementById("buyerForm").addEventListener("submit", e => {
+    e.preventDefault();
 
-  if (selected.length === 0) {
-    alert('Selecione pelo menos um número.');
-    return;
-  }
+    if (selected.length === 0) {
+      alert("Selecione pelo menos um número.");
+      return;
+    }
 
-  const phone = document.getElementById('phone').value.trim();
-
-  // Aceita apenas DDD + 9 dígitos (11 números no total)
-  const phoneRegex = /^[0-9]{11}$/;
-
-  if (!phoneRegex.test(phone)) {
-    alert('Telefone inválido. Use apenas números no formato: 84981677500');
-    return;
-  }
-
-      alert('Selecione pelo menos um número.');
+    const phone = document.getElementById("phone").value.trim();
+    const phoneRegex = /^[0-9]{11}$/;
+    if (!phoneRegex.test(phone)) {
+      alert("Telefone inválido. Use exatamente 11 dígitos, ex: 84981677500");
       return;
     }
 
     const params = new URLSearchParams({
-      'entry.80231626': selected.map(n => formatNumber(n)).join(', '),
-      'entry.1960355039': document.getElementById('name').value,
-      'entry.332784604': document.getElementById('email').value,
-      'entry.857723668': document.getElementById('phone').value
+      "entry.80231626": selected.map(n => formatNumber(n)).join(", "),
+      "entry.1960355039": document.getElementById("name").value,
+      "entry.332784604": document.getElementById("email").value,
+      "entry.857723668": phone
     });
 
     window.location.href = `${FORM_URL}?${params.toString()}`;

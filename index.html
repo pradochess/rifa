@@ -218,8 +218,23 @@
   }
 
   document.getElementById('buyerForm').addEventListener('submit', e => {
-    e.preventDefault();
-    if (selected.length === 0) {
+  e.preventDefault();
+
+  if (selected.length === 0) {
+    alert('Selecione pelo menos um número.');
+    return;
+  }
+
+  const phone = document.getElementById('phone').value.trim();
+
+  // Aceita apenas DDD + 9 dígitos (11 números no total)
+  const phoneRegex = /^[0-9]{11}$/;
+
+  if (!phoneRegex.test(phone)) {
+    alert('Telefone inválido. Use apenas números no formato: 84981677500');
+    return;
+  }
+
       alert('Selecione pelo menos um número.');
       return;
     }

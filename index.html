@@ -1,270 +1,205 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Rifa Online</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<title>Rifa Online</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f6f7f9;
-      margin: 0;
-      padding: 20px;
-      color: #222;
-    }
-
-    h1, h2 {
-      margin-top: 0;
-    }
-
-    .info {
-      background: #ffffff;
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 6px rgba(0,0,0,.05);
-    }
-
-    .numeros {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-
-    .numero {
-      padding: 12px 0;
-      text-align: center;
-      border-radius: 6px;
-      cursor: pointer;
-      user-select: none;
-      font-weight: bold;
-      border: 1px solid #ccc;
-      background: #fff;
-    }
-
-    .numero.disponivel {
-      background: #ffffff;
-    }
-
-    .numero.selecionado {
-      background: #4caf50;
-      color: #fff;
-      border-color: #4caf50;
-    }
-
-    .numero.indisponivel {
-      background: #e0e0e0;
-      color: #777;
-      cursor: not-allowed;
-    }
-
-    form {
-      background: #ffffff;
-      padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,.05);
-    }
-
-    label {
-      display: block;
-      margin-top: 12px;
-      font-weight: bold;
-    }
-
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 4px;
-      box-sizing: border-box;
-    }
-
-    button {
-      margin-top: 16px;
-      padding: 12px;
-      width: 100%;
-      font-size: 16px;
-      cursor: pointer;
-      border: none;
-      border-radius: 6px;
-      background: #1976d2;
-      color: #fff;
-    }
-
-    button:disabled {
-      background: #aaa;
-      cursor: not-allowed;
-    }
-
-    .resumo {
-      margin-top: 16px;
-      background: #f1f3f5;
-      padding: 12px;
-      border-radius: 6px;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="info">
-    <h1>Rifa Online</h1>
-    <p><strong>Valor por número:</strong> R$ 3,00</p>
-    <p><strong>Prêmio:</strong> (em breve)</p>
-    <p><strong>Sorteio:</strong> (em breve)</p>
-  </div>
-
-  <h2>Escolha seus números</h2>
-  <div id="listaNumeros" class="numeros"></div>
-
-  <form id="formulario">
-    <h2>Dados do comprador</h2>
-
-    <label>Nome</label>
-    <input type="text" id="nome" required />
-
-    <label>Email</label>
-    <input type="email" id="email" required />
-
-    <label>Telefone (somente números)</label>
-    <input
-      type="text"
-      id="telefone"
-      placeholder="Ex: 84981677500"
-      pattern="[0-9]{10,11}"
-      required
-    />
-
-    <div class="resumo" id="resumo"></div>
-
-    <button type="submit" id="btnEnviar" disabled>
-      Finalizar compra
-    </button>
-  </form>
-
-<script>
-/* ================= CONFIGURAÇÕES ================= */
-
-const API_URL =
-  "https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
-
-const VALOR_POR_NUMERO = 3;
-const TOTAL_NUMEROS = 1000;
-
-/* ================= ESTADO ================= */
-
-let numerosIndisponiveis = new Set();
-let numerosSelecionados = new Set();
-
-/* ================= UTIL ================= */
-
-function pad4(num) {
-  return String(num).padStart(4, "0");
+<style>
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f6f7f9;
+  margin: 0;
+  padding: 20px;
 }
 
-/* ================= CARREGAMENTO ================= */
+h1, h2 {
+  margin-top: 0;
+}
 
-document.addEventListener("DOMContentLoaded", () => {
-  carregarNumeros();
-});
+.info, form {
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.05);
+}
 
-/* ================= BUSCA ================= */
+.numeros {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 8px;
+}
+
+.numero {
+  padding: 12px 0;
+  text-align: center;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  background: #fff;
+}
+
+.numero.indisponivel {
+  background: #e0e0e0;
+  color: #777;
+  cursor: not-allowed;
+}
+
+.numero.selecionado {
+  background: #4caf50;
+  color: #fff;
+  border-color: #4caf50;
+}
+
+label {
+  display: block;
+  margin-top: 12px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+}
+
+button {
+  margin-top: 16px;
+  padding: 12px;
+  width: 100%;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  background: #1976d2;
+  color: #fff;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #aaa;
+}
+
+.resumo {
+  background: #f1f3f5;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="info">
+  <h1>Rifa Online</h1>
+  <p><strong>Valor por número:</strong> R$ 3,00</p>
+  <p><strong>Prêmio:</strong> (em breve)</p>
+  <p><strong>Sorteio:</strong> (em breve)</p>
+</div>
+
+<h2>Escolha seus números</h2>
+<div id="listaNumeros" class="numeros"></div>
+
+<form id="formulario">
+  <h2>Dados do comprador</h2>
+
+  <label>Nome</label>
+  <input type="text" required>
+
+  <label>Email</label>
+  <input type="email" required>
+
+  <label>Telefone (somente números)</label>
+  <input type="text" placeholder="Ex: 84981677500" pattern="[0-9]{10,11}" required>
+
+  <div id="resumo" class="resumo"></div>
+
+  <button id="btnEnviar" disabled>Finalizar compra</button>
+</form>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
+const TOTAL_NUMEROS = 1000;
+const VALOR = 3;
+
+let indisponiveis = new Set();
+let selecionados = new Set();
+
+function pad4(n) {
+  return String(n).padStart(4, "0");
+}
+
+document.addEventListener("DOMContentLoaded", carregarNumeros);
 
 async function carregarNumeros() {
   try {
-    const response = await fetch(API_URL);
-    const data = await response.json();
+    const r = await fetch(API_URL);
+    const data = await r.json();
 
-    numerosIndisponiveis.clear();
+    indisponiveis.clear();
+
     data.forEach(item => {
-      if (item.numero !== undefined && item.numero !== "") {
-        numerosIndisponiveis.add(Number(item.numero));
-      }
+      const campo = item["Números"] || item["Número"] || item["numeros"];
+      if (!campo) return;
+
+      campo.split(",").map(n => n.trim()).forEach(n => {
+        const num = Number(n);
+        if (!isNaN(num)) indisponiveis.add(num);
+      });
     });
 
-    renderizarNumeros();
-  } catch (erro) {
-    console.error("Erro ao carregar números:", erro);
-    alert("Erro ao carregar números da rifa.");
+    renderizar();
+  } catch (e) {
+    console.error(e);
+    alert("Erro ao carregar números");
   }
 }
 
-/* ================= RENDER ================= */
-
-function renderizarNumeros() {
-  const container = document.getElementById("listaNumeros");
-  container.innerHTML = "";
+function renderizar() {
+  const div = document.getElementById("listaNumeros");
+  div.innerHTML = "";
 
   for (let i = 0; i <= TOTAL_NUMEROS; i++) {
-    const div = document.createElement("div");
-    div.textContent = pad4(i);
-    div.classList.add("numero");
+    const el = document.createElement("div");
+    el.textContent = pad4(i);
+    el.className = "numero";
 
-    if (numerosIndisponiveis.has(i)) {
-      div.classList.add("indisponivel");
+    if (indisponiveis.has(i)) {
+      el.classList.add("indisponivel");
     } else {
-      div.classList.add("disponivel");
-      div.addEventListener("click", () => toggleNumero(i, div));
+      el.onclick = () => toggle(i, el);
     }
 
-    container.appendChild(div);
+    div.appendChild(el);
   }
 }
 
-/* ================= SELEÇÃO ================= */
-
-function toggleNumero(numero, elemento) {
-  if (numerosSelecionados.has(numero)) {
-    numerosSelecionados.delete(numero);
-    elemento.classList.remove("selecionado");
+function toggle(num, el) {
+  if (selecionados.has(num)) {
+    selecionados.delete(num);
+    el.classList.remove("selecionado");
   } else {
-    numerosSelecionados.add(numero);
-    elemento.classList.add("selecionado");
+    selecionados.add(num);
+    el.classList.add("selecionado");
   }
-
   atualizarResumo();
 }
 
-/* ================= RESUMO ================= */
-
 function atualizarResumo() {
-  const resumo = document.getElementById("resumo");
-  const btn = document.getElementById("btnEnviar");
+  const r = document.getElementById("resumo");
+  const b = document.getElementById("btnEnviar");
 
-  if (numerosSelecionados.size === 0) {
-    resumo.innerHTML = "";
-    btn.disabled = true;
+  if (selecionados.size === 0) {
+    r.innerHTML = "";
+    b.disabled = true;
     return;
   }
 
-  const total = numerosSelecionados.size * VALOR_POR_NUMERO;
+  const total = selecionados.size * VALOR;
 
-  resumo.innerHTML = `
-    <p><strong>Números selecionados:</strong> ${[...numerosSelecionados].map(pad4).join(", ")}</p>
+  r.innerHTML = `
+    <p><strong>Números:</strong> ${[...selecionados].map(pad4).join(", ")}</p>
     <p><strong>Total:</strong> R$ ${total.toFixed(2)}</p>
-    <p><strong>PIX:</strong> prado@ymail.com</p>
-    <p><strong>Favorecido:</strong> Fellipe Prado - NuBank</p>
-  `;
-
-  btn.disabled = false;
-}
-
-/* ================= ENVIO ================= */
-
-document.getElementById("formulario").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  if (numerosSelecionados.size === 0) {
-    alert("Selecione ao menos um número.");
-    return;
-  }
-
-  alert(
-    "Envio de comprovante deve ser feito pelo Google Forms.\n" +
-    "Após o pagamento, envie o comprovante conforme instruções."
-  );
-});
-</script>
-
-</body>
-</html>
+    <p><strong>PIX:</strong>

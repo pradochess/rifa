@@ -3,27 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <title>Rifa Online</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body {
-  font-family: Arial, Helvetica, sans-serif;
-  background: #f6f7f9;
+  font-family: Arial, sans-serif;
+  background: #f5f6f8;
   margin: 0;
   padding: 20px;
-  color: #222;
 }
 
-h1, h2 {
-  margin-top: 0;
-}
-
-.info, form {
-  background: #ffffff;
+.box {
+  background: #fff;
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,.05);
 }
 
 .numeros {
@@ -33,18 +27,16 @@ h1, h2 {
 }
 
 .numero {
+  border: 1px solid #ccc;
   padding: 12px 0;
   text-align: center;
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
-  border: 1px solid #ccc;
-  background: #fff;
-  user-select: none;
 }
 
 .numero.indisponivel {
-  background: #e0e0e0;
+  background: #ddd;
   color: #777;
   cursor: not-allowed;
 }
@@ -55,23 +47,9 @@ h1, h2 {
   border-color: #4caf50;
 }
 
-label {
-  display: block;
-  margin-top: 12px;
-  font-weight: bold;
-}
-
-input {
-  width: 100%;
-  padding: 8px;
-  margin-top: 4px;
-  box-sizing: border-box;
-}
-
 button {
-  margin-top: 16px;
-  padding: 12px;
   width: 100%;
+  padding: 14px;
   font-size: 16px;
   border: none;
   border-radius: 6px;
@@ -82,187 +60,110 @@ button {
 
 button:disabled {
   background: #aaa;
-  cursor: not-allowed;
-}
-
-.resumo {
-  background: #f1f3f5;
-  padding: 12px;
-  border-radius: 6px;
-  margin-top: 16px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="info">
+<div class="box">
   <h1>Rifa Online</h1>
   <p><strong>Valor por número:</strong> R$ 3,00</p>
-  <p><strong>Prêmio:</strong> (em breve)</p>
-  <p><strong>Sorteio:</strong> (em breve)</p>
 </div>
 
 <h2>Escolha seus números</h2>
-<div id="listaNumeros" class="numeros"></div>
+<div id="lista" class="numeros"></div>
 
-<form id="formulario">
-  <h2>Dados do comprador</h2>
-
-  <label>Nome</label>
-  <input type="text" required>
-
-  <label>Email</label>
-  <input type="email" required>
-
-  <label>Telefone (somente números)</label>
-  <input
-    type="text"
-    placeholder="Ex: 84981677500"
-    pattern="[0-9]{10,11}"
-    required
-  >
-
-  <div id="resumo" class="resumo"></div>
-
-  <button id="btnEnviar" disabled>Finalizar compra</button>
-</form>
+<button id="finalizar" disabled>Finalizar compra</button>
 
 <script>
-/* ================= CONFIGURAÇÕES ================= */
+/* ================= CONFIG ================= */
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
+"https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
 
-const TOTAL_NUMEROS = 1000;
-const VALOR_POR_NUMERO = 3;
+const FORM_URL =
+"https://docs.google.com/forms/d/e/1FAIpQLSc-GWBmH84HEi0byarZdcTYZW2I_lKdsLnKqOZiI-wezlk5FQ/viewform";
 
-/* ================= ESTADO ================= */
+const ENTRY_NUMEROS = "entry.80231626";
 
-let numerosIndisponiveis = new Set();
-let numerosSelecionados = new Set();
+/* ========================================== */
 
-/* ================= UTIL ================= */
+const TOTAL = 1000;
+const indisponiveis = new Set();
+const selecionados = new Set();
 
 function pad4(n) {
   return String(n).padStart(4, "0");
 }
 
-/* ================= INICIALIZAÇÃO ================= */
-
-document.addEventListener("DOMContentLoaded", () => {
-  renderizarNumerosBase();   // SEMPRE renderiza
-  carregarIndisponiveis();  // backend depois
+document.addEventListener("DOMContentLoaded", async () => {
+  criarNumeros();
+  await carregarIndisponiveis();
 });
 
-/* ================= RENDER BASE ================= */
+function criarNumeros() {
+  const lista = document.getElementById("lista");
 
-function renderizarNumerosBase() {
-  const container = document.getElementById("listaNumeros");
-  container.innerHTML = "";
-
-  for (let i = 0; i <= TOTAL_NUMEROS; i++) {
+  for (let i = 0; i <= TOTAL; i++) {
     const div = document.createElement("div");
-    div.textContent = pad4(i);
     div.className = "numero";
+    div.textContent = pad4(i);
     div.dataset.numero = i;
 
-    div.addEventListener("click", () => alternarNumero(i, div));
-
-    container.appendChild(div);
+    div.onclick = () => alternar(i, div);
+    lista.appendChild(div);
   }
 }
-
-/* ================= BACKEND ================= */
 
 async function carregarIndisponiveis() {
-  try {
-    const response = await fetch(API_URL, { cache: "no-store" });
-    const data = await response.json();
+  const r = await fetch(API_URL, { cache: "no-store" });
+  const data = await r.json();
 
-    numerosIndisponiveis.clear();
+  data.forEach(linha => {
+    const campo = linha["Números"];
+    if (!campo) return;
 
-    data.forEach(item => {
-      const campo =
-        item["Números"] ||
-        item["Número"] ||
-        item["numeros"] ||
-        item["numero"];
-
-      if (!campo) return;
-
-      campo
-        .toString()
-        .split(",")
-        .map(n => n.trim())
-        .forEach(n => {
-          const num = Number(n);
-          if (!isNaN(num)) {
-            numerosIndisponiveis.add(num);
-          }
-        });
+    campo.split(",").forEach(n => {
+      const num = Number(n.trim());
+      if (!isNaN(num)) indisponiveis.add(num);
     });
+  });
 
-    aplicarIndisponiveis();
-  } catch (erro) {
-    console.error("Erro ao buscar números:", erro);
-  }
-}
-
-/* ================= APLICA ESTADO ================= */
-
-function aplicarIndisponiveis() {
   document.querySelectorAll(".numero").forEach(el => {
-    const num = Number(el.dataset.numero);
-
-    if (numerosIndisponiveis.has(num)) {
+    const n = Number(el.dataset.numero);
+    if (indisponiveis.has(n)) {
       el.classList.add("indisponivel");
-      el.removeEventListener("click", () => {});
+      el.onclick = null;
     }
   });
 }
 
-/* ================= SELEÇÃO ================= */
+function alternar(num, el) {
+  if (indisponiveis.has(num)) return;
 
-function alternarNumero(num, el) {
-  if (numerosIndisponiveis.has(num)) return;
-
-  if (numerosSelecionados.has(num)) {
-    numerosSelecionados.delete(num);
+  if (selecionados.has(num)) {
+    selecionados.delete(num);
     el.classList.remove("selecionado");
   } else {
-    numerosSelecionados.add(num);
+    selecionados.add(num);
     el.classList.add("selecionado");
   }
 
-  atualizarResumo();
+  document.getElementById("finalizar").disabled =
+    selecionados.size === 0;
 }
 
-/* ================= RESUMO ================= */
+/* ===== REDIRECIONAMENTO REAL ===== */
 
-function atualizarResumo() {
-  const resumo = document.getElementById("resumo");
-  const botao = document.getElementById("btnEnviar");
+document.getElementById("finalizar").addEventListener("click", () => {
+  const lista = [...selecionados].map(pad4).join(", ");
 
-  if (numerosSelecionados.size === 0) {
-    resumo.innerHTML = "";
-    botao.disabled = true;
-    return;
-  }
+  const url =
+    `${FORM_URL}?${ENTRY_NUMEROS}=${encodeURIComponent(lista)}`;
 
-  const total = numerosSelecionados.size * VALOR_POR_NUMERO;
-
-  resumo.innerHTML = `
-    <p><strong>Números selecionados:</strong>
-      ${[...numerosSelecionados].map(pad4).join(", ")}
-    </p>
-    <p><strong>Total:</strong> R$ ${total.toFixed(2)}</p>
-    <p><strong>PIX:</strong> prado@ymail.com</p>
-    <p><strong>Favorecido:</strong> Fellipe Prado - NuBank</p>
-  `;
-
-  botao.disabled = false;
-}
+  window.location.assign(url);
+});
 </script>
 
 </body>

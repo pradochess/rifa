@@ -6,279 +6,589 @@
 <title>Rifa Online</title>
 
 <style>
-:root {
-  --bg: #0b0f14;
-  --card: #121826;
-  --text: #e5e7eb;
-  --muted: #9ca3af;
-  --blue: #2563eb;
-  --red: #dc2626;
-  --border: #1f2937;
+:root{
+  --bg:#0b0f14;
+  --card:#121826;
+  --card2:#0f1626;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --border:#1f2937;
+
+  --blue:#2563eb;   /* selecionado */
+  --red:#dc2626;    /* vendido/indisponível */
+  --amber:#f59e0b;  /* reservado */
+
+  --shadow:0 18px 60px rgba(0,0,0,.35);
 }
 
-* {
-  box-sizing: border-box;
-  font-family: Inter, system-ui, sans-serif;
+*{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+body{margin:0;background:var(--bg);color:var(--text)}
+.container{max-width:1100px;margin:0 auto;padding:18px}
+.header{padding:10px 0 6px;text-align:center}
+.header h1{margin:0;font-size:28px;letter-spacing:.2px}
+.header p{margin:8px 0 0;color:var(--muted)}
+
+.card{
+  background:linear-gradient(180deg,var(--card),var(--card2));
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:18px;
+  box-shadow:var(--shadow);
 }
 
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
+.row{display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:820px){ .row{grid-template-columns:1.2fr .8fr} }
+
+.section-title{margin:0 0 10px;font-size:16px;color:var(--text)}
+.small{color:var(--muted);font-size:13px;margin:6px 0 0;line-height:1.35}
+
+.badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.badge{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;border-radius:999px;border:1px solid var(--border);
+  background:rgba(255,255,255,.03);color:var(--muted);font-size:13px
+}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.free{background:#64748b}
+.dot.sel{background:var(--blue)}
+.dot.sold{background:var(--red)}
+.dot.res{background:var(--amber)}
+
+.inputs{display:grid;gap:10px;margin-top:10px}
+label{font-size:12px;color:var(--muted)}
+input{
+  width:100%;
+  background:#0b1220;
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:12px 12px;
+  border-radius:12px;
+  outline:none;
+}
+input:focus{border-color:rgba(37,99,235,.75);box-shadow:0 0 0 3px rgba(37,99,235,.2)}
+
+.grid-wrap{margin-top:14px}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(56px,1fr));
+  gap:10px;
+}
+@media (max-width:520px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(48px,1fr))}
 }
 
-.container {
-  max-width: 1100px;
-  margin: auto;
-  padding: 20px;
+.num{
+  user-select:none;
+  display:flex;align-items:center;justify-content:center;
+  padding:12px 0;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.02);
+  color:var(--text);
+  font-weight:800;
+  letter-spacing:.5px;
+  cursor:pointer;
+  transition:transform .12s ease, border-color .2s ease, background .2s ease, opacity .2s ease;
+  position:relative;
+  overflow:hidden;
+}
+.num:hover{transform:translateY(-2px);border-color:rgba(37,99,235,.55)}
+.num:active{transform:translateY(0px) scale(.98)}
+
+.num.selected{
+  background:rgba(37,99,235,.95);
+  border-color:rgba(37,99,235,1);
+  color:#fff;
+  animation:pulse 1.15s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(37,99,235,.25)}
+  70%{box-shadow:0 0 0 10px rgba(37,99,235,0)}
+  100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 6px;
+.num.sold{
+  background:rgba(220,38,38,.95);
+  border-color:rgba(220,38,38,1);
+  color:#fff;
+  cursor:not-allowed;
+  opacity:1;
 }
 
-.subtitle {
-  text-align: center;
-  color: var(--muted);
-  margin-bottom: 24px;
+.num.reserved{
+  background:rgba(245,158,11,.95);
+  border-color:rgba(245,158,11,1);
+  color:#111827;
+  cursor:not-allowed;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
-  gap: 10px;
+.footer-fixed{
+  position:fixed;left:0;right:0;bottom:0;
+  background:rgba(11,15,20,.9);
+  backdrop-filter: blur(10px);
+  border-top:1px solid var(--border);
+  padding:12px;
+}
+.footer-inner{
+  max-width:1100px;margin:0 auto;
+  display:grid;gap:10px;
+  grid-template-columns:1fr;
+  align-items:center
+}
+@media (min-width:820px){
+  .footer-inner{grid-template-columns:1fr auto}
+}
+.summary{
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.35;
+}
+.summary strong{color:var(--text)}
+
+.btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.btn{
+  border:none;border-radius:14px;
+  padding:14px 16px;
+  color:#fff;
+  font-weight:900;
+  cursor:pointer;
+  min-width:240px;
+  transition:transform .12s ease, opacity .2s ease, box-shadow .2s ease;
+}
+.btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+
+.btn-pix{
+  background:linear-gradient(135deg,var(--blue),#1d4ed8);
+  box-shadow:0 14px 35px rgba(37,99,235,.28);
+}
+.btn-card{
+  background:linear-gradient(135deg,#334155,#0f172a);
+  box-shadow:0 14px 35px rgba(2,6,23,.35);
+  border:1px solid rgba(148,163,184,.2);
 }
 
-.number {
-  background: var(--card);
-  border: 1px solid var(--border);
-  padding: 14px 0;
-  text-align: center;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: 0.2s;
-  font-weight: 600;
+.modal{
+  position:fixed;inset:0;display:none;
+  background:rgba(0,0,0,.65);
+  padding:16px;
 }
-
-.number:hover {
-  border-color: var(--blue);
+.modal.on{display:flex;align-items:center;justify-content:center}
+.modal-card{
+  width:min(560px,100%);
+  background:linear-gradient(180deg,var(--card),var(--card2));
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:var(--shadow);
 }
-
-.number.selected {
-  background: var(--blue);
-  color: white;
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px}
+.close{
+  background:transparent;border:1px solid var(--border);
+  color:var(--text);border-radius:10px;
+  padding:8px 10px;cursor:pointer;
 }
-
-.number.sold {
-  background: var(--red);
-  color: white;
-  cursor: not-allowed;
+.qr{
+  display:block;
+  max-width:240px;
+  margin:12px auto;
+  border-radius:14px;
+  border:1px solid var(--border);
 }
-
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 20px;
-  margin-top: 24px;
+textarea{
+  width:100%;
+  min-height:98px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:#0b1220;
+  color:var(--text);
+  padding:12px;
+  resize:none;
 }
-
-label {
-  display: block;
-  margin-top: 14px;
-  font-size: 0.9rem;
-  color: var(--muted);
-}
-
-input {
-  width: 100%;
-  padding: 12px;
-  margin-top: 6px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: #0b0f14;
-  color: var(--text);
-}
-
-button {
-  width: 100%;
-  margin-top: 18px;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: var(--blue);
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-button:hover {
-  opacity: 0.9;
-}
-
-.summary {
-  margin-top: 12px;
-  color: var(--muted);
-}
-
-.pix {
-  margin-top: 20px;
-  text-align: center;
-}
-
-.pix img {
-  margin: 12px auto;
-  max-width: 220px;
-}
-
-textarea {
-  width: 100%;
-  background: #0b0f14;
-  color: var(--text);
-  border-radius: 10px;
-  padding: 12px;
-  border: 1px solid var(--border);
-}
-
-@media (max-width: 600px) {
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
-  }
-}
+.note{color:var(--muted);font-size:12px;margin-top:10px;line-height:1.35}
+.spacer{height:128px} /* espaço para o footer fixo */
+hr.sep{border:none;border-top:1px solid var(--border);margin:12px 0}
 </style>
 </head>
 
 <body>
+  <div class="container">
+    <div class="header">
+      <h1>Rifa Online</h1>
+      <p>Selecione seus números (R$ <span id="valorNumero">3,00</span> por número)</p>
+    </div>
 
-<div class="container">
-  <h1>Rifa Online</h1>
-  <div class="subtitle">Selecione seus números da sorte</div>
+    <div class="row">
+      <!-- DESCRIÇÃO + GRID -->
+      <div class="card">
+        <h2 class="section-title">Sobre a rifa</h2>
+        <p class="small" id="descricaoRifa">
+          <strong>Descrição:</strong> (exemplo) Participe da rifa escolhendo seus números. Em breve, aqui entra a descrição oficial do prêmio e demais regras.
+        </p>
+        <p class="small" id="premioRifa"><strong>Prêmio:</strong> a definir</p>
+        <p class="small" id="dataSorteio"><strong>Data do sorteio:</strong> a definir</p>
 
-  <div id="numbers" class="grid"></div>
+        <div class="badges">
+          <div class="badge"><span class="dot free"></span>Disponível</div>
+          <div class="badge"><span class="dot sel"></span>Selecionado</div>
+          <div class="badge"><span class="dot sold"></span>Indisponível</div>
+          <div class="badge"><span class="dot res"></span>Reservado</div>
+        </div>
 
-  <div class="card">
-    <label>Nome</label>
-    <input id="nome" placeholder="Seu nome completo" />
+        <div class="grid-wrap">
+          <h2 class="section-title" style="margin-top:18px">Escolha seus números</h2>
+          <div id="loader" class="small">Carregando números…</div>
+          <div id="grid" class="grid" style="display:none"></div>
+          <p class="small" style="margin-top:12px">
+            Dica: números reservados expiram automaticamente. Se um número reservado não for pago, ele volta a ficar disponível após alguns minutos.
+          </p>
+        </div>
+      </div>
 
-    <label>E-mail</label>
-    <input id="email" type="email" placeholder="seu@email.com" />
+      <!-- DADOS DO COMPRADOR -->
+      <div class="card">
+        <h2 class="section-title">Dados do comprador</h2>
+        <div class="inputs">
+          <div>
+            <label>Nome completo</label>
+            <input id="nome" type="text" placeholder="Seu nome completo" />
+          </div>
+          <div>
+            <label>E-mail</label>
+            <input id="email" type="email" placeholder="seu@email.com" />
+          </div>
+          <div>
+            <label>Telefone (somente números — ex: 84981677500)</label>
+            <input id="telefone" type="text" inputmode="numeric" placeholder="84981677500" />
+          </div>
+        </div>
 
-    <label>Telefone</label>
-    <input id="telefone" placeholder="(DDD) WhatsApp" />
+        <hr class="sep">
 
-    <button onclick="finalizar()">Finalizar Compra</button>
+        <p class="small">
+          <strong>Pagamento:</strong> você pode pagar via <strong>PIX</strong> (QR Code) ou <strong>Cartão</strong> (Checkout Pro).
+          A confirmação é automática e os números ficam indisponíveis após aprovação.
+        </p>
+      </div>
+    </div>
 
-    <div id="summary" class="summary"></div>
-    <div class="pix"></div>
+    <div class="spacer"></div>
   </div>
-</div>
+
+  <!-- FOOTER FIXO -->
+  <div class="footer-fixed">
+    <div class="footer-inner">
+      <div class="summary" id="summary">
+        Selecione seus números para ver o total.
+      </div>
+
+      <div class="btns">
+        <button class="btn btn-pix" id="btnPix" disabled>Pagar via PIX</button>
+        <button class="btn btn-card" id="btnCard" disabled>Pagar com Cartão</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PIX / STATUS -->
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <strong id="modalTitle">Pagamento</strong><br>
+          <span class="small" id="modalSub">Aguarde...</span>
+        </div>
+        <button class="close" id="btnClose">Fechar</button>
+      </div>
+
+      <div id="modalInfo" class="small"></div>
+
+      <img id="qrImg" class="qr" alt="QR Code PIX" style="display:none" />
+      <textarea id="pixCopiaCola" readonly style="display:none"></textarea>
+
+      <div class="note" id="modalNote">
+        Se o QR Code não aparecer, use o “copia e cola”.
+      </div>
+    </div>
+  </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzR3_2ZZv0o4nDA9efpNi2O17ArPQvOHp6cHKYqcTR1DTvvTk89Nackd6p8s4J191pI/exec";
-const TOTAL = 100;
-const PRICE = 10;
+/* =======================
+   CONFIGURAÇÕES (JÁ PREENCHIDAS)
+   ======================= */
+const STATUS_API_URL = "https://script.google.com/macros/s/AKfycbzR3_2ZZv0o4nDA9efpNi2O17ArPQvOHp6cHKYqcTR1DTvvTk89Nackd6p8s4J191pI/exec";
+const PAY_API_URL    = "https://script.google.com/macros/s/AKfycbzR3_2ZZv0o4nDA9efpNi2O17ArPQvOHp6cHKYqcTR1DTvvTk89Nackd6p8s4J191pI/exec";
+/* ======================= */
 
-const selecionados = new Set();
-let vendidos = new Set();
+const TOTAL_NUMBERS = 1000;
+const PRICE = 3;
 
-const numbersDiv = document.getElementById("numbers");
+const gridEl = document.getElementById("grid");
+const loaderEl = document.getElementById("loader");
+const summaryEl = document.getElementById("summary");
 
-function pad(n) {
-  return n.toString().padStart(4, "0");
+const btnPix = document.getElementById("btnPix");
+const btnCard = document.getElementById("btnCard");
+
+const modal = document.getElementById("modal");
+const btnClose = document.getElementById("btnClose");
+const modalTitle = document.getElementById("modalTitle");
+const modalSub = document.getElementById("modalSub");
+const modalInfo = document.getElementById("modalInfo");
+const modalNote = document.getElementById("modalNote");
+const qrImg = document.getElementById("qrImg");
+const pixCopiaCola = document.getElementById("pixCopiaCola");
+
+const selected = new Set();
+let sold = new Set();
+let reserved = new Set();
+let lockMinutes = 10;
+
+function pad4(n){ return String(n).padStart(4,"0"); }
+function moneyBRL(v){ return v.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+function openModal(title, sub){
+  modalTitle.textContent = title;
+  modalSub.textContent = sub || "";
+  modal.classList.add("on");
+}
+function closeModal(){
+  modal.classList.remove("on");
+}
+btnClose.addEventListener("click", closeModal);
+modal.addEventListener("click", (e)=>{ if(e.target === modal) closeModal(); });
+
+function resetModalContent(){
+  modalInfo.innerHTML = "";
+  qrImg.style.display = "none";
+  qrImg.removeAttribute("src");
+  pixCopiaCola.style.display = "none";
+  pixCopiaCola.value = "";
+  modalNote.textContent = "Se o QR Code não aparecer, use o “copia e cola”.";
 }
 
-function render() {
-  numbersDiv.innerHTML = "";
-  for (let i = 1; i <= TOTAL; i++) {
-    const num = pad(i);
-    const div = document.createElement("div");
-    div.className = "number";
-    div.textContent = num;
-
-    if (vendidos.has(num)) {
-      div.classList.add("sold");
-    } else if (selecionados.has(num)) {
-      div.classList.add("selected");
-    }
-
-    div.onclick = () => {
-      if (vendidos.has(num)) return;
-      selecionados.has(num) ? selecionados.delete(num) : selecionados.add(num);
-      render();
-      atualizarResumo();
-    };
-
-    numbersDiv.appendChild(div);
-  }
-}
-
-function atualizarResumo() {
-  const resumo = document.getElementById("summary");
-  if (selecionados.size === 0) {
-    resumo.innerText = "Nenhum número selecionado.";
-    return;
-  }
-  resumo.innerText =
-    `Selecionados: ${[...selecionados].join(", ")} — Total: R$ ${selecionados.size * PRICE},00`;
-}
-
-async function carregarVendidos() {
-  try {
-    const res = await fetch(API_URL + "?action=getSold");
-    const data = await res.json();
-    vendidos = new Set(data);
-    render();
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-async function finalizar() {
-  if (selecionados.size === 0) {
-    alert("Selecione ao menos um número.");
+function updateSummary(){
+  if(selected.size === 0){
+    summaryEl.innerHTML = "Selecione seus números para ver o total.";
+    btnPix.disabled = true;
+    btnCard.disabled = true;
     return;
   }
 
-  const nome = nome.value.trim();
-  const email = email.value.trim();
-  const telefone = telefone.value.trim();
+  const qty = selected.size;
+  const total = qty * PRICE;
+  const nums = [...selected].sort().join(", ");
 
-  if (!nome || !email || !telefone) {
-    alert("Preencha todos os dados.");
-    return;
+  summaryEl.innerHTML = `<strong>${qty}</strong> número(s) • <strong>R$ ${moneyBRL(total)}</strong><br><span class="small">Números: ${nums}</span>`;
+  btnPix.disabled = false;
+  btnCard.disabled = false;
+}
+
+function renderGrid(){
+  gridEl.innerHTML = "";
+
+  for(let i=1;i<=TOTAL_NUMBERS;i++){
+    const n = pad4(i);
+    const d = document.createElement("div");
+    d.className = "num";
+    d.textContent = n;
+
+    // prioridade visual: sold > reserved > selected > free
+    if(sold.has(n)) d.classList.add("sold");
+    else if(reserved.has(n)) d.classList.add("reserved");
+    else if(selected.has(n)) d.classList.add("selected");
+
+    d.addEventListener("click", () => {
+      if(sold.has(n) || reserved.has(n)) return;
+
+      if(selected.has(n)) selected.delete(n);
+      else selected.add(n);
+
+      renderGrid();
+      updateSummary();
+    });
+
+    gridEl.appendChild(d);
   }
 
-  document.getElementById("summary").innerText = "Gerando PIX, aguarde...";
+  loaderEl.style.display = "none";
+  gridEl.style.display = "grid";
+}
 
-  const payload = {
-    action: "create_pix",
-    numbers: [...selecionados].join(","),
-    amount: selecionados.size * PRICE,
-    email
-  };
+function parseStatusResponse(data){
+  // Esperado do script unificado:
+  // { vendidos: [...], bloqueados: [...], lock_minutes: 10 }
+  // Mas também aceita o formato antigo: [{ "Números": "0069, 0070" }, ...]
+  const soldSet = new Set();
+  const resSet = new Set();
 
-  const res = await fetch(API_URL, {
+  if(Array.isArray(data)){
+    data.forEach(item=>{
+      const field = item["Números"] || item["Numeros"] || item["numero"] || item["numbers"];
+      if(!field) return;
+      String(field).split(",").map(x=>x.trim()).filter(Boolean).forEach(x=>soldSet.add(x));
+    });
+  } else if(data && typeof data === "object"){
+    (data.vendidos || data.sold || []).forEach(x=>soldSet.add(String(x).trim()));
+    (data.bloqueados || data.blocked || data.reservados || []).forEach(x=>resSet.add(String(x).trim()));
+    if(Number.isFinite(Number(data.lock_minutes))) lockMinutes = Number(data.lock_minutes);
+  }
+
+  sold = soldSet;
+  reserved = resSet;
+
+  // Se algum selecionado virou indisponível, remove da seleção
+  for(const n of [...selected]){
+    if(sold.has(n) || reserved.has(n)) selected.delete(n);
+  }
+}
+
+async function fetchStatus(){
+  try{
+    const r = await fetch(STATUS_API_URL, { cache:"no-store" });
+    const data = await r.json();
+    parseStatusResponse(data);
+  }catch(err){
+    console.error("Erro ao carregar status:", err);
+    // mantém o grid renderizado mesmo em erro
+  }finally{
+    renderGrid();
+    updateSummary();
+  }
+}
+
+function validateBuyer(){
+  const nome = document.getElementById("nome").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const tel = document.getElementById("telefone").value.trim();
+
+  if(!selected.size) return { ok:false, msg:"Selecione ao menos um número." };
+  if(!nome || !email || !tel) return { ok:false, msg:"Preencha nome, e-mail e telefone." };
+  if(!/^[0-9]{11}$/.test(tel)) return { ok:false, msg:"Telefone inválido. Use somente números (ex: 84981677500)." };
+
+  return { ok:true, nome, email, tel };
+}
+
+async function lockNumbers(email, amount, numbers){
+  const lockResp = await fetch(PAY_API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({ action:"lock_numbers", email, amount, numbers })
   });
-
-  const data = await res.json();
-
-  document.querySelector(".pix").innerHTML = `
-    <h3>Pagamento via PIX</h3>
-    <img src="data:image/png;base64,${data.qr_code_base64}">
-    <textarea readonly>${data.qr_code}</textarea>
-    <p class="summary">A confirmação é automática após o pagamento.</p>
-  `;
+  const lockJson = await lockResp.json();
+  if(lockJson?.error) throw new Error(lockJson.error);
+  return lockJson;
 }
 
-render();
-carregarVendidos();
-setInterval(carregarVendidos, 5000);
-</script>
+function showPixModal(data, amount, numbers){
+  resetModalContent();
+  openModal("Pagamento via PIX", "Pague e aguarde a confirmação automática.");
 
+  modalInfo.innerHTML = `
+    <strong>Valor:</strong> R$ ${moneyBRL(amount)}<br>
+    <strong>Números:</strong> ${numbers}<br>
+    <span class="small">A atualização do site ocorre automaticamente (a cada 5s).</span>
+  `;
+
+  if(data.qr_code_base64){
+    qrImg.src = `data:image/png;base64,${data.qr_code_base64}`;
+    qrImg.style.display = "block";
+  }
+  if(data.qr_code){
+    pixCopiaCola.value = data.qr_code;
+    pixCopiaCola.style.display = "block";
+  }
+
+  modalNote.textContent = `Reserva válida por aproximadamente ${lockMinutes} minutos. Se não pagar, os números podem voltar a ficar disponíveis.`;
+}
+
+function showErrorModal(title, err, debug){
+  resetModalContent();
+  openModal(title, "Não foi possível concluir.");
+  modalInfo.innerHTML = `<span class="small"><strong>Erro:</strong> ${String(err)}</span>`;
+  if(debug){
+    modalNote.textContent = "Se persistir, revise o Apps Script (ações create_pix / create_preference) e o deploy (Nova versão).";
+  }
+}
+
+btnPix.addEventListener("click", async () => {
+  const v = validateBuyer();
+  if(!v.ok) return alert(v.msg);
+
+  const numbers = [...selected].sort().join(", ");
+  const amount = selected.size * PRICE;
+
+  try{
+    // 1) reserva
+    resetModalContent();
+    openModal("Processando", "Reservando números…");
+    await lockNumbers(v.email, amount, numbers);
+
+    // 2) cria pix
+    modalSub.textContent = "Gerando PIX…";
+    const r = await fetch(PAY_API_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ action:"create_pix", numbers, email:v.email, amount })
+    });
+    const data = await r.json();
+    if(data?.error) throw new Error(data.error);
+
+    showPixModal(data, amount, numbers);
+
+  }catch(err){
+    console.error(err);
+    showErrorModal("Falha no PIX", err, true);
+  }finally{
+    // atualiza status para refletir reserva rapidamente
+    fetchStatus();
+  }
+});
+
+btnCard.addEventListener("click", async () => {
+  const v = validateBuyer();
+  if(!v.ok) return alert(v.msg);
+
+  const numbers = [...selected].sort().join(", ");
+  const amount = selected.size * PRICE;
+
+  try{
+    resetModalContent();
+    openModal("Processando", "Reservando números…");
+    await lockNumbers(v.email, amount, numbers);
+
+    modalSub.textContent = "Gerando Checkout Pro…";
+    const r = await fetch(PAY_API_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ action:"create_preference", numbers, email:v.email, amount })
+    });
+    const data = await r.json();
+    if(data?.error) throw new Error(data.error);
+    if(!data.init_point) throw new Error("init_point não retornou.");
+
+    // abre checkout em nova aba
+    window.open(data.init_point, "_blank", "noopener,noreferrer");
+
+    // feedback
+    modalInfo.innerHTML = `
+      <strong>Checkout aberto em nova aba.</strong><br>
+      <span class="small">Finalize o pagamento por cartão/PIX no Mercado Pago. Após aprovado, seus números ficarão indisponíveis automaticamente.</span>
+    `;
+    modalNote.textContent = `Reserva válida por aproximadamente ${lockMinutes} minutos.`;
+
+  }catch(err){
+    console.error(err);
+    showErrorModal("Falha no Checkout Pro", err, true);
+  }finally{
+    fetchStatus();
+  }
+});
+
+// init
+renderGrid();       // render imediato (não fica “vazio” em aba anônima)
+updateSummary();
+fetchStatus();
+setInterval(fetchStatus, 5000);
+</script>
 </body>
 </html>

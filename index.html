@@ -2,206 +2,268 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rifa Online</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
-    :root {
-      --primary: #111827;
-      --accent: #2563eb;
-      --card: #ffffff;
-      --bg: #f9fafb;
-    }
     body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f6f7f9;
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: #111;
-    }
-    header {
-      background: var(--primary);
-      color: white;
       padding: 20px;
-      text-align: center;
+      color: #222;
     }
-    main {
-      padding: 24px;
-      max-width: 1100px;
-      margin: auto;
+
+    h1, h2 {
+      margin-top: 0;
     }
-    .numbers {
+
+    .info {
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.05);
+    }
+
+    .numeros {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-      gap: 6px;
+      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+      gap: 8px;
+      margin-bottom: 20px;
     }
-    .number {
-      padding: 10px 0;
+
+    .numero {
+      padding: 12px 0;
       text-align: center;
       border-radius: 6px;
       cursor: pointer;
       user-select: none;
-      font-size: 14px;
+      font-weight: bold;
+      border: 1px solid #ccc;
+      background: #fff;
     }
-    .number.available { background: #dcfce7; color: #065f46; }
-    .number.selected { background: #dbeafe; color: #1e3a8a; border: 2px solid var(--accent); }
-    .number.unavailable { background: #fee2e2; color: #7f1d1d; cursor: not-allowed; }
+
+    .numero.disponivel {
+      background: #ffffff;
+    }
+
+    .numero.selecionado {
+      background: #4caf50;
+      color: #fff;
+      border-color: #4caf50;
+    }
+
+    .numero.indisponivel {
+      background: #e0e0e0;
+      color: #777;
+      cursor: not-allowed;
+    }
+
     form {
-      margin-top: 30px;
-      background: var(--card);
-      padding: 20px;
+      background: #ffffff;
+      padding: 16px;
       border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.05);
     }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
     input {
       width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      margin-bottom: 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      font-size: 14px;
+      padding: 8px;
+      margin-top: 4px;
+      box-sizing: border-box;
     }
+
     button {
+      margin-top: 16px;
+      padding: 12px;
       width: 100%;
-      padding: 14px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
       font-size: 16px;
       cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      background: #1976d2;
+      color: #fff;
     }
-    .summary {
-      margin-top: 10px;
-      font-weight: bold;
+
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+
+    .resumo {
+      margin-top: 16px;
+      background: #f1f3f5;
+      padding: 12px;
+      border-radius: 6px;
     }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>Rifa Online</h1>
-  <p>Valor por número: <strong>R$ 3,00</strong></p>
-</header>
+  <div class="info">
+    <h1>Rifa Online</h1>
+    <p><strong>Valor por número:</strong> R$ 3,00</p>
+    <p><strong>Prêmio:</strong> (em breve)</p>
+    <p><strong>Sorteio:</strong> (em breve)</p>
+  </div>
 
-<main>
-  <section>
-    <h2>Escolha seus números</h2>
-    <div id="numbers" class="numbers"></div>
-  </section>
+  <h2>Escolha seus números</h2>
+  <div id="listaNumeros" class="numeros"></div>
 
-  <form id="buyerForm">
+  <form id="formulario">
     <h2>Dados do comprador</h2>
 
-    <label>
-      Nome completo
-      <input type="text" id="name" required />
-    </label>
+    <label>Nome</label>
+    <input type="text" id="nome" required />
 
-    <label>
-      Email
-      <input type="email" id="email" required />
-    </label>
+    <label>Email</label>
+    <input type="email" id="email" required />
 
-    <label>
-      Telefone (somente números, ex: 84981677500)
-      <input type="tel" id="phone" inputmode="numeric" required placeholder="84981677500" />
-    </label>
+    <label>Telefone (somente números)</label>
+    <input
+      type="text"
+      id="telefone"
+      placeholder="Ex: 84981677500"
+      pattern="[0-9]{10,11}"
+      required
+    />
 
-    <div class="summary" id="summary"></div>
+    <div class="resumo" id="resumo"></div>
 
-    <button type="submit">Finalizar compra</button>
+    <button type="submit" id="btnEnviar" disabled>
+      Finalizar compra
+    </button>
   </form>
-</main>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
-  const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc-GWBmH84HEi0byarZdcTYZW2I_lKdsLnKqOZiI-wezlk5FQ/viewform";
+/* ================= CONFIGURAÇÕES ================= */
 
-  const PRICE = 3;
-  const MAX = 1000;
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
 
-  let sold = [];
-  let selected = [];
+const VALOR_POR_NUMERO = 3;
+const TOTAL_NUMEROS = 1000;
 
-  function formatNumber(n) {
-    return n.toString().padStart(4, '0');
-  }
+/* ================= ESTADO ================= */
 
-  fetch(API_URL)
-    .then(response => response.json())
-    .then(data => {
-      sold = data.map(Number);
-      renderNumbers();
-    })
-    .catch(err => {
-      console.error("Erro ao carregar números:", err);
-    });
+let numerosIndisponiveis = new Set();
+let numerosSelecionados = new Set();
 
-  function renderNumbers() {
-    const container = document.getElementById("numbers");
-    container.innerHTML = "";
-    for (let i = 0; i <= MAX; i++) {
-      const div = document.createElement("div");
-      div.textContent = formatNumber(i);
+/* ================= UTIL ================= */
 
-      if (sold.includes(i)) {
-        div.className = "number unavailable";
-      } else if (selected.includes(i)) {
-        div.className = "number selected";
-        div.onclick = () => toggle(i);
-      } else {
-        div.className = "number available";
-        div.onclick = () => toggle(i);
+function pad4(num) {
+  return String(num).padStart(4, "0");
+}
+
+/* ================= CARREGAMENTO ================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+  carregarNumeros();
+});
+
+/* ================= BUSCA ================= */
+
+async function carregarNumeros() {
+  try {
+    const response = await fetch(API_URL);
+    const data = await response.json();
+
+    numerosIndisponiveis.clear();
+    data.forEach(item => {
+      if (item.numero !== undefined && item.numero !== "") {
+        numerosIndisponiveis.add(Number(item.numero));
       }
-
-      container.appendChild(div);
-    }
-  }
-
-  function toggle(n) {
-    if (selected.includes(n)) {
-      selected = selected.filter(x => x !== n);
-    } else {
-      selected.push(n);
-    }
-    updateSummary();
-    renderNumbers();
-  }
-
-  function updateSummary() {
-    const summaryDiv = document.getElementById("summary");
-    if (selected.length === 0) {
-      summaryDiv.textContent = "";
-      return;
-    }
-    const total = selected.length * PRICE;
-    const formatted = selected.map(n => formatNumber(n)).join(", ");
-    summaryDiv.textContent = `Números selecionados: ${formatted} | Total: R$ ${total.toFixed(2)}`;
-  }
-
-  document.getElementById("buyerForm").addEventListener("submit", e => {
-    e.preventDefault();
-
-    if (selected.length === 0) {
-      alert("Selecione pelo menos um número.");
-      return;
-    }
-
-    const phone = document.getElementById("phone").value.trim();
-    const phoneRegex = /^[0-9]{11}$/;
-    if (!phoneRegex.test(phone)) {
-      alert("Telefone inválido. Use exatamente 11 dígitos, ex: 84981677500");
-      return;
-    }
-
-    const params = new URLSearchParams({
-      "entry.80231626": selected.map(n => formatNumber(n)).join(", "),
-      "entry.1960355039": document.getElementById("name").value,
-      "entry.332784604": document.getElementById("email").value,
-      "entry.857723668": phone
     });
 
-    window.location.href = `${FORM_URL}?${params.toString()}`;
-  });
+    renderizarNumeros();
+  } catch (erro) {
+    console.error("Erro ao carregar números:", erro);
+    alert("Erro ao carregar números da rifa.");
+  }
+}
+
+/* ================= RENDER ================= */
+
+function renderizarNumeros() {
+  const container = document.getElementById("listaNumeros");
+  container.innerHTML = "";
+
+  for (let i = 0; i <= TOTAL_NUMEROS; i++) {
+    const div = document.createElement("div");
+    div.textContent = pad4(i);
+    div.classList.add("numero");
+
+    if (numerosIndisponiveis.has(i)) {
+      div.classList.add("indisponivel");
+    } else {
+      div.classList.add("disponivel");
+      div.addEventListener("click", () => toggleNumero(i, div));
+    }
+
+    container.appendChild(div);
+  }
+}
+
+/* ================= SELEÇÃO ================= */
+
+function toggleNumero(numero, elemento) {
+  if (numerosSelecionados.has(numero)) {
+    numerosSelecionados.delete(numero);
+    elemento.classList.remove("selecionado");
+  } else {
+    numerosSelecionados.add(numero);
+    elemento.classList.add("selecionado");
+  }
+
+  atualizarResumo();
+}
+
+/* ================= RESUMO ================= */
+
+function atualizarResumo() {
+  const resumo = document.getElementById("resumo");
+  const btn = document.getElementById("btnEnviar");
+
+  if (numerosSelecionados.size === 0) {
+    resumo.innerHTML = "";
+    btn.disabled = true;
+    return;
+  }
+
+  const total = numerosSelecionados.size * VALOR_POR_NUMERO;
+
+  resumo.innerHTML = `
+    <p><strong>Números selecionados:</strong> ${[...numerosSelecionados].map(pad4).join(", ")}</p>
+    <p><strong>Total:</strong> R$ ${total.toFixed(2)}</p>
+    <p><strong>PIX:</strong> prado@ymail.com</p>
+    <p><strong>Favorecido:</strong> Fellipe Prado - NuBank</p>
+  `;
+
+  btn.disabled = false;
+}
+
+/* ================= ENVIO ================= */
+
+document.getElementById("formulario").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  if (numerosSelecionados.size === 0) {
+    alert("Selecione ao menos um número.");
+    return;
+  }
+
+  alert(
+    "Envio de comprovante deve ser feito pelo Google Forms.\n" +
+    "Após o pagamento, envie o comprovante conforme instruções."
+  );
+});
 </script>
 
 </body>

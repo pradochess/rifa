@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rifa Online</title>
+  <style>
+    :root {
+      --primary: #111827;
+      --accent: #2563eb;
+      --available: #16a34a;
+      --selected: #2563eb;
+      --unavailable: #dc2626;
+      --bg: #f9fafb;
+      --card: #ffffff;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: var(--bg);
+      color: #111;
+    }
+
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 24px;
+      text-align: center;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: auto;
+      padding: 24px;
+    }
+
+    .info {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.05);
+    }
+
+    .numbers {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+      gap: 8px;
+    }
+
+    .number {
+      padding: 12px 0;
+      text-align: center;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+      border: 2px solid transparent;
+    }
+
+    .available { background: #dcfce7; color: #065f46; }
+    .selected { background: #dbeafe; color: #1e3a8a; border-color: var(--selected); }
+    .unavailable { background: #fee2e2; color: #7f1d1d; cursor: not-allowed; }
+
+    form {
+      margin-top: 32px;
+      background: var(--card);
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.05);
+    }
+
+    label { display: block; margin-top: 16px; }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 24px;
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .summary {
+      margin-top: 16px;
+      font-weight: bold;
+    }
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 13px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Rifa Online</h1>
+  <p>Valor por número: <strong>R$ 3,00</strong></p>
+</header>
+
+<main>
+
+  <section class="info">
+    <h2>Sobre a rifa</h2>
+    <p><em>Descrição da rifa (exemplo):</em> concorra a um prêmio incrível. Em breve você verá aqui a descrição completa do prêmio e a data do sorteio.</p>
+    <p><strong>Data do sorteio:</strong> a definir</p>
+  </section>
+
+  <section class="info">
+    <h2>Escolha seus números</h2>
+    <div id="numbers" class="numbers"></div>
+  </section>
+
+  <form id="buyerForm">
+    <h2>Dados do comprador</h2>
+
+    <label>Nome completo
+      <input type="text" id="name" required />
+    </label>
+
+    <label>Email
+      <input type="email" id="email" required />
+    </label>
+
+    <label>Telefone (ex: (11) 91234-5678)
+      <input type="tel" id="phone" pattern="\\(\\d{2}\\) \\d{5}-\\d{4}" required />
+    </label>
+
+    <div class="summary" id="summary"></div>
+
+    <button type="submit">Finalizar compra</button>
+  </form>
+
+</main>
+
+<footer>
+  Fellipe Prado – Rifa Online
+</footer>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
+  const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc-GWBmH84HEi0byarZdcTYZW2I_lKdsLnKqOZiI-wezlk5FQ/viewform";
+
+  const PRICE = 3;
+  const MAX = 1000;
+
+  const numbersDiv = document.getElementById('numbers');
+  const summaryDiv = document.getElementById('summary');
+
+  let sold = [];
+  let selected = [];
+
+  fetch(API_URL)
+    .then(r => r.json())
+    .then(data => {
+      sold = data.map(Number);
+      renderNumbers();
+    });
+
+  function renderNumbers() {
+    numbersDiv.innerHTML = '';
+    for (let i = 0; i <= MAX; i++) {
+      const div = document.createElement('div');
+      div.textContent = i;
+
+      if (sold.includes(i)) {
+        div.className = 'number unavailable';
+      } else if (selected.includes(i)) {
+        div.className = 'number selected';
+        div.onclick = () => toggle(i);
+      } else {
+        div.className = 'number available';
+        div.onclick = () => toggle(i);
+      }
+      numbersDiv.appendChild(div);
+    }
+  }
+
+  function toggle(n) {
+    if (selected.includes(n)) {
+      selected = selected.filter(x => x !== n);
+    } else {
+      selected.push(n);
+    }
+    updateSummary();
+    renderNumbers();
+  }
+
+  function updateSummary() {
+    if (selected.length === 0) {
+      summaryDiv.textContent = '';
+      return;
+    }
+    const total = selected.length * PRICE;
+    summaryDiv.textContent = `Números selecionados: ${selected.join(', ')} | Total: R$ ${total.toFixed(2)}`;
+  }
+
+  document.getElementById('buyerForm').addEventListener('submit', e => {
+    e.preventDefault();
+    if (selected.length === 0) {
+      alert('Selecione pelo menos um número.');
+      return;
+    }
+
+    const params = new URLSearchParams({
+      'entry.80231626': selected.join(', '),
+      'entry.1960355039': document.getElementById('name').value,
+      'entry.332784604': document.getElementById('email').value,
+      'entry.857723668': document.getElementById('phone').value
+    });
+
+    window.location.href = `${FORM_URL}?${params.toString()}`;
+  });
+</script>
+
+</body>
+</html>

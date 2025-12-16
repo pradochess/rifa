@@ -183,7 +183,8 @@
     numbersDiv.innerHTML = '';
     for (let i = 0; i <= MAX; i++) {
       const div = document.createElement('div');
-      div.textContent = i;
+      div.textContent = formatNumber(i);
+
 
       if (sold.includes(i)) {
         div.className = 'number unavailable';
@@ -205,6 +206,10 @@
       selected.push(n);
     }
     updateSummary();
+function formatNumber(n) {
+  return n.toString().padStart(4, '0');
+}
+
     renderNumbers();
   }
 
@@ -214,7 +219,9 @@
       return;
     }
     const total = selected.length * PRICE;
-    summaryDiv.textContent = `Números selecionados: ${selected.join(', ')} | Total: R$ ${total.toFixed(2)}`;
+    const formatted = selected.map(n => formatNumber(n)).join(', ');
+summaryDiv.textContent = `Números selecionados: ${formatted} | Total: R$ ${total.toFixed(2)}`;
+
   }
 
   document.getElementById('buyerForm').addEventListener('submit', e => {
@@ -240,7 +247,7 @@
     }
 
     const params = new URLSearchParams({
-      'entry.80231626': selected.join(', '),
+      'entry.80231626': selected.map(n => formatNumber(n)).join(', '),
       'entry.1960355039': document.getElementById('name').value,
       'entry.332784604': document.getElementById('email').value,
       'entry.857723668': document.getElementById('phone').value

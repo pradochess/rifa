@@ -10,7 +10,7 @@ body {
   font-family: Arial, sans-serif;
   background: #f5f6f8;
   margin: 0;
-  padding: 20px;
+  padding: 20px 20px 120px 20px;
 }
 
 .box {
@@ -47,7 +47,35 @@ body {
   border-color: #4caf50;
 }
 
-button {
+label {
+  display: block;
+  margin-top: 12px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.footer-fixo {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  border-top: 1px solid #ddd;
+  padding: 12px;
+  box-shadow: 0 -2px 6px rgba(0,0,0,.08);
+}
+
+.footer-fixo button {
+  max-width: 420px;
+  margin: 0 auto;
+  display: block;
   width: 100%;
   padding: 14px;
   font-size: 16px;
@@ -58,7 +86,7 @@ button {
   cursor: pointer;
 }
 
-button:disabled {
+.footer-fixo button:disabled {
   background: #aaa;
 }
 </style>
@@ -69,25 +97,39 @@ button:disabled {
 <div class="box">
   <h1>Rifa Online</h1>
   <p><strong>Valor por número:</strong> R$ 3,00</p>
+  <p><strong>Prêmio:</strong> (a definir)</p>
+  <p><strong>Data do sorteio:</strong> (a definir)</p>
+</div>
+
+<div class="box">
+  <h2>Dados do comprador</h2>
+
+  <label>Nome completo</label>
+  <input id="nome" type="text" required>
+
+  <label>Email</label>
+  <input id="email" type="email" required>
+
+  <label>Telefone (somente números – ex: 84981677500)</label>
+  <input id="telefone" type="text" pattern="[0-9]{11}" placeholder="84981677500" required>
 </div>
 
 <h2>Escolha seus números</h2>
 <div id="lista" class="numeros"></div>
 
-<button id="finalizar" disabled>Finalizar compra</button>
+<div class="footer-fixo">
+  <button id="finalizar" disabled>Finalizar compra</button>
+</div>
 
 <script>
-/* ================= CONFIG ================= */
+const API_URL = "https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
 
-const API_URL =
-"https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
-
-const FORM_URL =
-"https://docs.google.com/forms/d/e/1FAIpQLSc-GWBmH84HEi0byarZdcTYZW2I_lKdsLnKqOZiI-wezlk5FQ/viewform";
+const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc-GWBmH84HEi0byarZdcTYZW2I_lKdsLnKqOZiI-wezlk5FQ/viewform";
 
 const ENTRY_NUMEROS = "entry.80231626";
-
-/* ========================================== */
+const ENTRY_NOME = "entry.1960355039";
+const ENTRY_EMAIL = "entry.332784604";
+const ENTRY_TEL = "entry.857723668";
 
 const TOTAL = 1000;
 const indisponiveis = new Set();
@@ -150,19 +192,24 @@ function alternar(num, el) {
     el.classList.add("selecionado");
   }
 
-  document.getElementById("finalizar").disabled =
-    selecionados.size === 0;
+  document.getElementById("finalizar").disabled = selecionados.size === 0;
 }
 
-/* ===== REDIRECIONAMENTO REAL ===== */
-
 document.getElementById("finalizar").addEventListener("click", () => {
+  const nome = document.getElementById("nome").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const tel = document.getElementById("telefone").value.trim();
+
+  if (!nome || !email || !tel) {
+    alert("Preencha todos os dados do comprador.");
+    return;
+  }
+
   const lista = [...selecionados].map(pad4).join(", ");
 
-  const url =
-    `${FORM_URL}?${ENTRY_NUMEROS}=${encodeURIComponent(lista)}`;
+  const url = `${FORM_URL}?${ENTRY_NUMEROS}=${encodeURIComponent(lista)}&${ENTRY_NOME}=${encodeURIComponent(nome)}&${ENTRY_EMAIL}=${encodeURIComponent(email)}&${ENTRY_TEL}=${encodeURIComponent(tel)}`;
 
-  window.location.assign(url);
+  window.location.href = url;
 });
 </script>
 

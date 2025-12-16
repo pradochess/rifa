@@ -11,6 +11,7 @@ body {
   background: #f6f7f9;
   margin: 0;
   padding: 20px;
+  color: #222;
 }
 
 h1, h2 {
@@ -18,7 +19,7 @@ h1, h2 {
 }
 
 .info, form {
-  background: #fff;
+  background: #ffffff;
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -39,6 +40,7 @@ h1, h2 {
   font-weight: bold;
   border: 1px solid #ccc;
   background: #fff;
+  user-select: none;
 }
 
 .numero.indisponivel {
@@ -63,6 +65,7 @@ input {
   width: 100%;
   padding: 8px;
   margin-top: 4px;
+  box-sizing: border-box;
 }
 
 button {
@@ -79,6 +82,7 @@ button {
 
 button:disabled {
   background: #aaa;
+  cursor: not-allowed;
 }
 
 .resumo {
@@ -112,7 +116,12 @@ button:disabled {
   <input type="email" required>
 
   <label>Telefone (somente números)</label>
-  <input type="text" placeholder="Ex: 84981677500" pattern="[0-9]{10,11}" required>
+  <input
+    type="text"
+    placeholder="Ex: 84981677500"
+    pattern="[0-9]{10,11}"
+    required
+  >
 
   <div id="resumo" class="resumo"></div>
 
@@ -120,86 +129,141 @@ button:disabled {
 </form>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
-const TOTAL_NUMEROS = 1000;
-const VALOR = 3;
+/* ================= CONFIGURAÇÕES ================= */
 
-let indisponiveis = new Set();
-let selecionados = new Set();
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
+
+const TOTAL_NUMEROS = 1000;
+const VALOR_POR_NUMERO = 3;
+
+/* ================= ESTADO ================= */
+
+let numerosIndisponiveis = new Set();
+let numerosSelecionados = new Set();
+
+/* ================= UTIL ================= */
 
 function pad4(n) {
   return String(n).padStart(4, "0");
 }
 
-document.addEventListener("DOMContentLoaded", carregarNumeros);
+/* ================= INICIALIZAÇÃO ================= */
 
-async function carregarNumeros() {
-  try {
-    const r = await fetch(API_URL);
-    const data = await r.json();
+document.addEventListener("DOMContentLoaded", () => {
+  renderizarNumerosBase();   // SEMPRE renderiza
+  carregarIndisponiveis();  // backend depois
+});
 
-    indisponiveis.clear();
+/* ================= RENDER BASE ================= */
 
-    data.forEach(item => {
-      const campo = item["Números"] || item["Número"] || item["numeros"];
-      if (!campo) return;
-
-      campo.split(",").map(n => n.trim()).forEach(n => {
-        const num = Number(n);
-        if (!isNaN(num)) indisponiveis.add(num);
-      });
-    });
-
-    renderizar();
-  } catch (e) {
-    console.error(e);
-    alert("Erro ao carregar números");
-  }
-}
-
-function renderizar() {
-  const div = document.getElementById("listaNumeros");
-  div.innerHTML = "";
+function renderizarNumerosBase() {
+  const container = document.getElementById("listaNumeros");
+  container.innerHTML = "";
 
   for (let i = 0; i <= TOTAL_NUMEROS; i++) {
-    const el = document.createElement("div");
-    el.textContent = pad4(i);
-    el.className = "numero";
+    const div = document.createElement("div");
+    div.textContent = pad4(i);
+    div.className = "numero";
+    div.dataset.numero = i;
 
-    if (indisponiveis.has(i)) {
-      el.classList.add("indisponivel");
-    } else {
-      el.onclick = () => toggle(i, el);
-    }
+    div.addEventListener("click", () => alternarNumero(i, div));
 
-    div.appendChild(el);
+    container.appendChild(div);
   }
 }
 
-function toggle(num, el) {
-  if (selecionados.has(num)) {
-    selecionados.delete(num);
+/* ================= BACKEND ================= */
+
+async function carregarIndisponiveis() {
+  try {
+    const response = await fetch(API_URL, { cache: "no-store" });
+    const data = await response.json();
+
+    numerosIndisponiveis.clear();
+
+    data.forEach(item => {
+      const campo =
+        item["Números"] ||
+        item["Número"] ||
+        item["numeros"] ||
+        item["numero"];
+
+      if (!campo) return;
+
+      campo
+        .toString()
+        .split(",")
+        .map(n => n.trim())
+        .forEach(n => {
+          const num = Number(n);
+          if (!isNaN(num)) {
+            numerosIndisponiveis.add(num);
+          }
+        });
+    });
+
+    aplicarIndisponiveis();
+  } catch (erro) {
+    console.error("Erro ao buscar números:", erro);
+  }
+}
+
+/* ================= APLICA ESTADO ================= */
+
+function aplicarIndisponiveis() {
+  document.querySelectorAll(".numero").forEach(el => {
+    const num = Number(el.dataset.numero);
+
+    if (numerosIndisponiveis.has(num)) {
+      el.classList.add("indisponivel");
+      el.removeEventListener("click", () => {});
+    }
+  });
+}
+
+/* ================= SELEÇÃO ================= */
+
+function alternarNumero(num, el) {
+  if (numerosIndisponiveis.has(num)) return;
+
+  if (numerosSelecionados.has(num)) {
+    numerosSelecionados.delete(num);
     el.classList.remove("selecionado");
   } else {
-    selecionados.add(num);
+    numerosSelecionados.add(num);
     el.classList.add("selecionado");
   }
+
   atualizarResumo();
 }
 
-function atualizarResumo() {
-  const r = document.getElementById("resumo");
-  const b = document.getElementById("btnEnviar");
+/* ================= RESUMO ================= */
 
-  if (selecionados.size === 0) {
-    r.innerHTML = "";
-    b.disabled = true;
+function atualizarResumo() {
+  const resumo = document.getElementById("resumo");
+  const botao = document.getElementById("btnEnviar");
+
+  if (numerosSelecionados.size === 0) {
+    resumo.innerHTML = "";
+    botao.disabled = true;
     return;
   }
 
-  const total = selecionados.size * VALOR;
+  const total = numerosSelecionados.size * VALOR_POR_NUMERO;
 
-  r.innerHTML = `
-    <p><strong>Números:</strong> ${[...selecionados].map(pad4).join(", ")}</p>
+  resumo.innerHTML = `
+    <p><strong>Números selecionados:</strong>
+      ${[...numerosSelecionados].map(pad4).join(", ")}
+    </p>
     <p><strong>Total:</strong> R$ ${total.toFixed(2)}</p>
-    <p><strong>PIX:</strong>
+    <p><strong>PIX:</strong> prado@ymail.com</p>
+    <p><strong>Favorecido:</strong> Fellipe Prado - NuBank</p>
+  `;
+
+  botao.disabled = false;
+}
+</script>
+
+</body>
+</html>

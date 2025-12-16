@@ -1,242 +1,225 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Rifa Online</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>Rifa Online</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f5f6f8;
-  margin: 0;
-  padding: 20px 20px 140px;
-}
+  <style>
+    :root {
+      --bg-dark: #020617;
+      --bg-light: #f8fafc;
+      --card-dark: #111827;
+      --card-light: #ffffff;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --accent: #facc15;
+      --text-dark: #e5e7eb;
+      --text-light: #020617;
+      --muted-dark: #9ca3af;
+      --muted-light: #475569;
+      --sold: #374151;
+      --success: #16a34a;
+    }
 
-.box {
-  background: #fff;
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, var(--bg-dark), #020617);
+      color: var(--text-dark);
+      font-family: system-ui, sans-serif;
+      transition: background .3s, color .3s;
+    }
 
-.numeros {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-  gap: 8px;
-}
+    body.light {
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
 
-.numero {
-  border: 1px solid #ccc;
-  padding: 12px 0;
-  text-align: center;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-}
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      padding: 16px;
+    }
 
-.numero.indisponivel {
-  background: #e0e0e0;
-  color: #777;
-  cursor: not-allowed;
-}
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
 
-.numero.selecionado {
-  background: #4caf50;
-  color: #fff;
-  border-color: #4caf50;
-}
+    h1 { margin: 0; }
 
-label {
-  display: block;
-  margin-top: 12px;
-  font-weight: bold;
-}
+    .toggle {
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+    }
 
-input {
-  width: 100%;
-  padding: 10px;
-  margin-top: 4px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
+    .card {
+      background: var(--card-dark);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      transition: background .3s;
+    }
 
-.footer-fixo {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: #ffffff;
-  border-top: 1px solid #ddd;
-  padding: 12px;
-  box-shadow: 0 -2px 6px rgba(0,0,0,.08);
-}
+    body.light .card {
+      background: var(--card-light);
+    }
 
-.footer-fixo button {
-  max-width: 420px;
-  margin: 0 auto;
-  display: block;
-  width: 100%;
-  padding: 14px;
-  font-size: 16px;
-  border: none;
-  border-radius: 6px;
-  background: #1976d2;
-  color: #fff;
-  cursor: pointer;
-}
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+      gap: 10px;
+    }
 
-.footer-fixo button:disabled {
-  background: #aaa;
-}
-</style>
+    .number {
+      padding: 10px 0;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: 600;
+      cursor: pointer;
+      background: #020617;
+      border: 1px solid #1f2937;
+    }
+
+    body.light .number { background: #f1f5f9; }
+
+    .number.selected { background: var(--primary); color: #fff; }
+    .number.sold { background: var(--sold); color: #9ca3af; cursor: not-allowed; text-decoration: line-through; }
+    .number.reserved { background: #92400e; color: #fff; }
+
+    .loader {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .summary {
+      margin-top: 16px;
+      font-weight: bold;
+    }
+
+    .pix {
+      background: #020617;
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: 16px;
+    }
+
+    body.light .pix { background: #f1f5f9; }
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #1f2937;
+      margin-top: 8px;
+    }
+
+    button {
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+  </style>
 </head>
 
 <body>
+<div class="container">
+  <header>
+    <h1>🎟️ Rifa Online</h1>
+    <button class="toggle" onclick="toggleTheme()">🌗 Tema</button>
+  </header>
 
-<div class="box">
-  <h1>Rifa Online</h1>
-  <p><strong>Valor por número:</strong> R$ 3,00</p>
-  <p><strong>Prêmio:</strong> (a definir)</p>
-  <p><strong>Data do sorteio:</strong> (a definir)</p>
-</div>
+  <div class="card">
+    <div id="loader" class="loader">Carregando números...</div>
+    <div id="numbers" class="grid" style="display:none"></div>
+  </div>
 
-<div class="box">
-  <h2>Dados do comprador</h2>
+  <div class="card">
+    <input id="nome" placeholder="Nome completo">
+    <input id="email" placeholder="Email">
+    <input id="telefone" placeholder="84981677500">
+    <div class="summary" id="summary"></div>
+    <button onclick="finalizar()">Finalizar Compra</button>
 
-  <label>Nome completo</label>
-  <input id="nome" type="text" required>
-
-  <label>Email</label>
-  <input id="email" type="email" required>
-
-  <label>Telefone (somente números — ex: 84981677500)</label>
-  <input id="telefone" type="text" pattern="[0-9]{11}" placeholder="84981677500" required>
-</div>
-
-<h2>Escolha seus números</h2>
-<div id="lista" class="numeros"></div>
-
-<div class="footer-fixo">
-  <button id="finalizar" disabled>Finalizar compra</button>
+    <div class="pix">
+      <strong>Pagamento via PIX</strong><br>
+      Fellipe Prado – NuBank<br>
+      Chave: prado@ymail.com
+    </div>
+  </div>
 </div>
 
 <script>
-/* ================= CONFIG ================= */
-
-const API_URL =
-"https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
-
-const FORM_URL =
-"https://docs.google.com/forms/d/e/1FAIpQLSc-GWBmH84HEi0byarZdcTYZW2I_lKdsLnKqOZiI-wezlk5FQ/viewform";
-
-const ENTRY_NUMEROS = "entry.80231626";
-const ENTRY_NOME    = "entry.1960355039";
-const ENTRY_EMAIL   = "entry.332784604";
-const ENTRY_TEL     = "entry.857723668";
-
-/* ========================================== */
-
 const TOTAL = 1000;
-const indisponiveis = new Set();
-const selecionados = new Set();
+const PRICE = 3;
+const API = "https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
 
-function pad4(n) {
-  return String(n).padStart(4, "0");
+let vendidos = new Set();
+let selecionados = new Set();
+let reservadoAte = Date.now() + 5*60*1000;
+
+function fmt(n){return String(n).padStart(4,'0');}
+
+async function carregar(){
+  const r = await fetch(API);
+  const j = await r.json();
+  vendidos.clear();
+  j.forEach(l => l['Números'].split(',').forEach(n => vendidos.add(n.trim())));
+  render();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  criarNumeros();
-  carregarIndisponiveis();
-  setInterval(carregarIndisponiveis, 15000); // atualização automática
-});
+function render(){
+  const grid = document.getElementById('numbers');
+  grid.innerHTML = '';
+  for(let i=1;i<=TOTAL;i++){
+    const n = fmt(i);
+    const d = document.createElement('div');
+    d.textContent = n;
+    d.className = 'number';
 
-function criarNumeros() {
-  const lista = document.getElementById("lista");
+    if(vendidos.has(n)) d.classList.add('sold');
+    else if(selecionados.has(n)) d.classList.add('selected');
 
-  for (let i = 0; i <= TOTAL; i++) {
-    const div = document.createElement("div");
-    div.className = "numero";
-    div.textContent = pad4(i);
-    div.dataset.numero = i;
-
-    div.addEventListener("click", () => alternar(i, div));
-    lista.appendChild(div);
+    d.onclick = ()=>{
+      if(vendidos.has(n)) return;
+      selecionados.has(n) ? selecionados.delete(n) : selecionados.add(n);
+      atualizarResumo();
+      render();
+    };
+    grid.appendChild(d);
   }
+  document.getElementById('loader').style.display='none';
+  grid.style.display='grid';
 }
 
-async function carregarIndisponiveis() {
-  try {
-    const r = await fetch(API_URL, { cache: "no-store" });
-    const data = await r.json();
-
-    indisponiveis.clear();
-
-    data.forEach(linha => {
-      const campo = linha["Números"];
-      if (!campo) return;
-
-      campo.split(",").forEach(n => {
-        const num = Number(n.trim());
-        if (!isNaN(num)) indisponiveis.add(num);
-      });
-    });
-
-    document.querySelectorAll(".numero").forEach(el => {
-      const n = Number(el.dataset.numero);
-
-      if (indisponiveis.has(n)) {
-        el.classList.add("indisponivel");
-        el.classList.remove("selecionado");
-        el.onclick = null;
-        selecionados.delete(n);
-      }
-    });
-
-    document.getElementById("finalizar").disabled =
-      selecionados.size === 0;
-
-  } catch (e) {
-    console.error("Erro ao atualizar números:", e);
-  }
+function atualizarResumo(){
+  const q = selecionados.size;
+  document.getElementById('summary').textContent = q ? `Total: ${q} números – R$ ${q*PRICE},00` : '';
 }
 
-function alternar(num, el) {
-  if (indisponiveis.has(num)) return;
-
-  if (selecionados.has(num)) {
-    selecionados.delete(num);
-    el.classList.remove("selecionado");
-  } else {
-    selecionados.add(num);
-    el.classList.add("selecionado");
-  }
-
-  document.getElementById("finalizar").disabled =
-    selecionados.size === 0;
+function finalizar(){
+  if(!selecionados.size) return alert('Selecione números');
+  const url = "https://docs.google.com/forms/d/e/1FAIpQLSc-GWBmH84HEi0byarZdcTYZW2I_lKdsLnKqOZiI-wezlk5FQ/viewform?"+
+  "entry.80231626="+encodeURIComponent([...selecionados].join(','))+
+  "&entry.1960355039="+encodeURIComponent(nome.value)+
+  "&entry.332784604="+encodeURIComponent(email.value)+
+  "&entry.857723668="+encodeURIComponent(telefone.value);
+  window.open(url,'_blank');
 }
 
-document.getElementById("finalizar").addEventListener("click", () => {
-  const nome = document.getElementById("nome").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const tel = document.getElementById("telefone").value.trim();
+function toggleTheme(){ document.body.classList.toggle('light'); }
 
-  if (!nome || !email || !tel) {
-    alert("Preencha todos os dados do comprador.");
-    return;
-  }
-
-  const lista = [...selecionados].map(pad4).join(", ");
-
-  const url =
-    `${FORM_URL}?${ENTRY_NUMEROS}=${encodeURIComponent(lista)}` +
-    `&${ENTRY_NOME}=${encodeURIComponent(nome)}` +
-    `&${ENTRY_EMAIL}=${encodeURIComponent(email)}` +
-    `&${ENTRY_TEL}=${encodeURIComponent(tel)}`;
-
-  window.location.href = url;
-});
+carregar();
+setInterval(carregar,5000);
 </script>
-
 </body>
 </html>

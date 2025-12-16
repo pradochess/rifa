@@ -10,7 +10,7 @@ body {
   font-family: Arial, sans-serif;
   background: #f5f6f8;
   margin: 0;
-  padding: 20px 20px 120px 20px;
+  padding: 20px 20px 140px;
 }
 
 .box {
@@ -36,7 +36,7 @@ body {
 }
 
 .numero.indisponivel {
-  background: #ddd;
+  background: #e0e0e0;
   color: #777;
   cursor: not-allowed;
 }
@@ -110,7 +110,7 @@ input {
   <label>Email</label>
   <input id="email" type="email" required>
 
-  <label>Telefone (somente números – ex: 84981677500)</label>
+  <label>Telefone (somente números — ex: 84981677500)</label>
   <input id="telefone" type="text" pattern="[0-9]{11}" placeholder="84981677500" required>
 </div>
 
@@ -122,14 +122,20 @@ input {
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
+/* ================= CONFIG ================= */
 
-const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc-GWBmH84HEi0byarZdcTYZW2I_lKdsLnKqOZiI-wezlk5FQ/viewform";
+const API_URL =
+"https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
+
+const FORM_URL =
+"https://docs.google.com/forms/d/e/1FAIpQLSc-GWBmH84HEi0byarZdcTYZW2I_lKdsLnKqOZiI-wezlk5FQ/viewform";
 
 const ENTRY_NUMEROS = "entry.80231626";
-const ENTRY_NOME = "entry.1960355039";
-const ENTRY_EMAIL = "entry.332784604";
-const ENTRY_TEL = "entry.857723668";
+const ENTRY_NOME    = "entry.1960355039";
+const ENTRY_EMAIL   = "entry.332784604";
+const ENTRY_TEL     = "entry.857723668";
+
+/* ========================================== */
 
 const TOTAL = 1000;
 const indisponiveis = new Set();
@@ -139,9 +145,10 @@ function pad4(n) {
   return String(n).padStart(4, "0");
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   criarNumeros();
-  await carregarIndisponiveis();
+  carregarIndisponiveis();
+  setInterval(carregarIndisponiveis, 15000); // atualização automática
 });
 
 function criarNumeros() {
@@ -153,32 +160,45 @@ function criarNumeros() {
     div.textContent = pad4(i);
     div.dataset.numero = i;
 
-    div.onclick = () => alternar(i, div);
+    div.addEventListener("click", () => alternar(i, div));
     lista.appendChild(div);
   }
 }
 
 async function carregarIndisponiveis() {
-  const r = await fetch(API_URL, { cache: "no-store" });
-  const data = await r.json();
+  try {
+    const r = await fetch(API_URL, { cache: "no-store" });
+    const data = await r.json();
 
-  data.forEach(linha => {
-    const campo = linha["Números"];
-    if (!campo) return;
+    indisponiveis.clear();
 
-    campo.split(",").forEach(n => {
-      const num = Number(n.trim());
-      if (!isNaN(num)) indisponiveis.add(num);
+    data.forEach(linha => {
+      const campo = linha["Números"];
+      if (!campo) return;
+
+      campo.split(",").forEach(n => {
+        const num = Number(n.trim());
+        if (!isNaN(num)) indisponiveis.add(num);
+      });
     });
-  });
 
-  document.querySelectorAll(".numero").forEach(el => {
-    const n = Number(el.dataset.numero);
-    if (indisponiveis.has(n)) {
-      el.classList.add("indisponivel");
-      el.onclick = null;
-    }
-  });
+    document.querySelectorAll(".numero").forEach(el => {
+      const n = Number(el.dataset.numero);
+
+      if (indisponiveis.has(n)) {
+        el.classList.add("indisponivel");
+        el.classList.remove("selecionado");
+        el.onclick = null;
+        selecionados.delete(n);
+      }
+    });
+
+    document.getElementById("finalizar").disabled =
+      selecionados.size === 0;
+
+  } catch (e) {
+    console.error("Erro ao atualizar números:", e);
+  }
 }
 
 function alternar(num, el) {
@@ -192,7 +212,8 @@ function alternar(num, el) {
     el.classList.add("selecionado");
   }
 
-  document.getElementById("finalizar").disabled = selecionados.size === 0;
+  document.getElementById("finalizar").disabled =
+    selecionados.size === 0;
 }
 
 document.getElementById("finalizar").addEventListener("click", () => {
@@ -207,7 +228,11 @@ document.getElementById("finalizar").addEventListener("click", () => {
 
   const lista = [...selecionados].map(pad4).join(", ");
 
-  const url = `${FORM_URL}?${ENTRY_NUMEROS}=${encodeURIComponent(lista)}&${ENTRY_NOME}=${encodeURIComponent(nome)}&${ENTRY_EMAIL}=${encodeURIComponent(email)}&${ENTRY_TEL}=${encodeURIComponent(tel)}`;
+  const url =
+    `${FORM_URL}?${ENTRY_NUMEROS}=${encodeURIComponent(lista)}` +
+    `&${ENTRY_NOME}=${encodeURIComponent(nome)}` +
+    `&${ENTRY_EMAIL}=${encodeURIComponent(email)}` +
+    `&${ENTRY_TEL}=${encodeURIComponent(tel)}`;
 
   window.location.href = url;
 });

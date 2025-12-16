@@ -1,225 +1,284 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Rifa Online</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rifa Online</title>
 
-  <style>
-    :root {
-      --bg-dark: #020617;
-      --bg-light: #f8fafc;
-      --card-dark: #111827;
-      --card-light: #ffffff;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --accent: #facc15;
-      --text-dark: #e5e7eb;
-      --text-light: #020617;
-      --muted-dark: #9ca3af;
-      --muted-light: #475569;
-      --sold: #374151;
-      --success: #16a34a;
-    }
+<style>
+:root {
+  --bg: #0b0f14;
+  --card: #121826;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --blue: #2563eb;
+  --red: #dc2626;
+  --border: #1f2937;
+}
 
-    body {
-      margin: 0;
-      background: linear-gradient(180deg, var(--bg-dark), #020617);
-      color: var(--text-dark);
-      font-family: system-ui, sans-serif;
-      transition: background .3s, color .3s;
-    }
+* {
+  box-sizing: border-box;
+  font-family: Inter, system-ui, sans-serif;
+}
 
-    body.light {
-      background: var(--bg-light);
-      color: var(--text-light);
-    }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
 
-    .container {
-      max-width: 1100px;
-      margin: auto;
-      padding: 16px;
-    }
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+}
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-    }
+h1 {
+  text-align: center;
+  margin-bottom: 6px;
+}
 
-    h1 { margin: 0; }
+.subtitle {
+  text-align: center;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
 
-    .toggle {
-      cursor: pointer;
-      padding: 8px 12px;
-      border-radius: 10px;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-    }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  gap: 10px;
+}
 
-    .card {
-      background: var(--card-dark);
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
-      transition: background .3s;
-    }
+.number {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 14px 0;
+  text-align: center;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-weight: 600;
+}
 
-    body.light .card {
-      background: var(--card-light);
-    }
+.number:hover {
+  border-color: var(--blue);
+}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-      gap: 10px;
-    }
+.number.selected {
+  background: var(--blue);
+  color: white;
+}
 
-    .number {
-      padding: 10px 0;
-      border-radius: 10px;
-      text-align: center;
-      font-weight: 600;
-      cursor: pointer;
-      background: #020617;
-      border: 1px solid #1f2937;
-    }
+.number.sold {
+  background: var(--red);
+  color: white;
+  cursor: not-allowed;
+}
 
-    body.light .number { background: #f1f5f9; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-top: 24px;
+}
 
-    .number.selected { background: var(--primary); color: #fff; }
-    .number.sold { background: var(--sold); color: #9ca3af; cursor: not-allowed; text-decoration: line-through; }
-    .number.reserved { background: #92400e; color: #fff; }
+label {
+  display: block;
+  margin-top: 14px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
 
-    .loader {
-      text-align: center;
-      padding: 20px;
-    }
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #0b0f14;
+  color: var(--text);
+}
 
-    .summary {
-      margin-top: 16px;
-      font-weight: bold;
-    }
+button {
+  width: 100%;
+  margin-top: 18px;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: var(--blue);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
 
-    .pix {
-      background: #020617;
-      padding: 16px;
-      border-radius: 12px;
-      margin-top: 16px;
-    }
+button:hover {
+  opacity: 0.9;
+}
 
-    body.light .pix { background: #f1f5f9; }
+.summary {
+  margin-top: 12px;
+  color: var(--muted);
+}
 
-    input, button {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #1f2937;
-      margin-top: 8px;
-    }
+.pix {
+  margin-top: 20px;
+  text-align: center;
+}
 
-    button {
-      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-    }
-  </style>
+.pix img {
+  margin: 12px auto;
+  max-width: 220px;
+}
+
+textarea {
+  width: 100%;
+  background: #0b0f14;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  }
+}
+</style>
 </head>
 
 <body>
+
 <div class="container">
-  <header>
-    <h1>🎟️ Rifa Online</h1>
-    <button class="toggle" onclick="toggleTheme()">🌗 Tema</button>
-  </header>
+  <h1>Rifa Online</h1>
+  <div class="subtitle">Selecione seus números da sorte</div>
+
+  <div id="numbers" class="grid"></div>
 
   <div class="card">
-    <div id="loader" class="loader">Carregando números...</div>
-    <div id="numbers" class="grid" style="display:none"></div>
-  </div>
+    <label>Nome</label>
+    <input id="nome" placeholder="Seu nome completo" />
 
-  <div class="card">
-    <input id="nome" placeholder="Nome completo">
-    <input id="email" placeholder="Email">
-    <input id="telefone" placeholder="84981677500">
-    <div class="summary" id="summary"></div>
+    <label>E-mail</label>
+    <input id="email" type="email" placeholder="seu@email.com" />
+
+    <label>Telefone</label>
+    <input id="telefone" placeholder="(DDD) WhatsApp" />
+
     <button onclick="finalizar()">Finalizar Compra</button>
 
-    <div class="pix">
-      <strong>Pagamento via PIX</strong><br>
-      Fellipe Prado – NuBank<br>
-      Chave: prado@ymail.com
-    </div>
+    <div id="summary" class="summary"></div>
+    <div class="pix"></div>
   </div>
 </div>
 
 <script>
-const TOTAL = 1000;
-const PRICE = 3;
-const API = "https://script.google.com/macros/s/AKfycbzXI3JcHzQ-GqB0jQHP1G4HkjHLZurpDenWlu3HvPqVaABD3klGadYf9jzrhyFtlraGlQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzR3_2ZZv0o4nDA9efpNi2O17ArPQvOHp6cHKYqcTR1DTvvTk89Nackd6p8s4J191pI/exec";
+const TOTAL = 100;
+const PRICE = 10;
 
+const selecionados = new Set();
 let vendidos = new Set();
-let selecionados = new Set();
-let reservadoAte = Date.now() + 5*60*1000;
 
-function fmt(n){return String(n).padStart(4,'0');}
+const numbersDiv = document.getElementById("numbers");
 
-async function carregar(){
-  const r = await fetch(API);
-  const j = await r.json();
-  vendidos.clear();
-  j.forEach(l => l['Números'].split(',').forEach(n => vendidos.add(n.trim())));
-  render();
+function pad(n) {
+  return n.toString().padStart(4, "0");
 }
 
-function render(){
-  const grid = document.getElementById('numbers');
-  grid.innerHTML = '';
-  for(let i=1;i<=TOTAL;i++){
-    const n = fmt(i);
-    const d = document.createElement('div');
-    d.textContent = n;
-    d.className = 'number';
+function render() {
+  numbersDiv.innerHTML = "";
+  for (let i = 1; i <= TOTAL; i++) {
+    const num = pad(i);
+    const div = document.createElement("div");
+    div.className = "number";
+    div.textContent = num;
 
-    if(vendidos.has(n)) d.classList.add('sold');
-    else if(selecionados.has(n)) d.classList.add('selected');
+    if (vendidos.has(num)) {
+      div.classList.add("sold");
+    } else if (selecionados.has(num)) {
+      div.classList.add("selected");
+    }
 
-    d.onclick = ()=>{
-      if(vendidos.has(n)) return;
-      selecionados.has(n) ? selecionados.delete(n) : selecionados.add(n);
-      atualizarResumo();
+    div.onclick = () => {
+      if (vendidos.has(num)) return;
+      selecionados.has(num) ? selecionados.delete(num) : selecionados.add(num);
       render();
+      atualizarResumo();
     };
-    grid.appendChild(d);
+
+    numbersDiv.appendChild(div);
   }
-  document.getElementById('loader').style.display='none';
-  grid.style.display='grid';
 }
 
-function atualizarResumo(){
-  const q = selecionados.size;
-  document.getElementById('summary').textContent = q ? `Total: ${q} números – R$ ${q*PRICE},00` : '';
+function atualizarResumo() {
+  const resumo = document.getElementById("summary");
+  if (selecionados.size === 0) {
+    resumo.innerText = "Nenhum número selecionado.";
+    return;
+  }
+  resumo.innerText =
+    `Selecionados: ${[...selecionados].join(", ")} — Total: R$ ${selecionados.size * PRICE},00`;
 }
 
-function finalizar(){
-  if(!selecionados.size) return alert('Selecione números');
-  const url = "https://docs.google.com/forms/d/e/1FAIpQLSc-GWBmH84HEi0byarZdcTYZW2I_lKdsLnKqOZiI-wezlk5FQ/viewform?"+
-  "entry.80231626="+encodeURIComponent([...selecionados].join(','))+
-  "&entry.1960355039="+encodeURIComponent(nome.value)+
-  "&entry.332784604="+encodeURIComponent(email.value)+
-  "&entry.857723668="+encodeURIComponent(telefone.value);
-  window.open(url,'_blank');
+async function carregarVendidos() {
+  try {
+    const res = await fetch(API_URL + "?action=getSold");
+    const data = await res.json();
+    vendidos = new Set(data);
+    render();
+  } catch (e) {
+    console.error(e);
+  }
 }
 
-function toggleTheme(){ document.body.classList.toggle('light'); }
+async function finalizar() {
+  if (selecionados.size === 0) {
+    alert("Selecione ao menos um número.");
+    return;
+  }
 
-carregar();
-setInterval(carregar,5000);
+  const nome = nome.value.trim();
+  const email = email.value.trim();
+  const telefone = telefone.value.trim();
+
+  if (!nome || !email || !telefone) {
+    alert("Preencha todos os dados.");
+    return;
+  }
+
+  document.getElementById("summary").innerText = "Gerando PIX, aguarde...";
+
+  const payload = {
+    action: "create_pix",
+    numbers: [...selecionados].join(","),
+    amount: selecionados.size * PRICE,
+    email
+  };
+
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+
+  document.querySelector(".pix").innerHTML = `
+    <h3>Pagamento via PIX</h3>
+    <img src="data:image/png;base64,${data.qr_code_base64}">
+    <textarea readonly>${data.qr_code}</textarea>
+    <p class="summary">A confirmação é automática após o pagamento.</p>
+  `;
+}
+
+render();
+carregarVendidos();
+setInterval(carregarVendidos, 5000);
 </script>
+
 </body>
 </html>
